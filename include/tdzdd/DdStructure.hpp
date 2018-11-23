@@ -548,8 +548,7 @@ public:
     }
 
     template <typename S, typename T, typename R>
-    R evaluate_weight(DdEval<S, T, R> const &evaluator,
-                      DataTable<T> &work) const {
+    R evaluate_weight(DdEval<S, T, R> const &evaluator, DataTable<T> &work) const {
         S              eval(evaluator.entity());  // copied
         bool           msg = eval.showMessages();
         int            n = root_.row();
@@ -573,16 +572,8 @@ public:
             size_t const                 m = node.size();
 
             for (size_t j = 0; j < m; ++j) {
-                DdValues<T, ARITY> values;
                 eval.initializenode(work[i][j]);
-
-                for (int b = 0; b < ARITY; ++b) {
-                    NodeId f = node[j].branch[b];
-                    values.setReference(b, &(work[f.row()][f.col()]));
-                    values.setLevel(b, f.row());
-                }
-
-                eval.evalNode(&(work[i][j]), i, values);
+                eval.evalNode(&(work[i][j]), i);
             }
 
             if (msg) {
@@ -595,6 +586,77 @@ public:
         if (msg) {
             mh.end();
         }
+
+        return retval;
+    }
+
+    template<typename S, typename T, typename R>
+    R evaluate_duration(DdEval<S, T, R> const &evaluator, DataTable<T> &work) const
+    {
+        S eval(evaluator.entity()); // copied
+        bool msg = eval.showMessages();
+        int n = root_.row();
+        MessageHandler mh;
+
+        if (msg) {
+            mh.begin(typenameof(eval));
+            mh.setSteps(n);
+        }
+
+        if (this->size() == 0){
+            printf("empty DDstructure\n");
+            R retval;
+            return retval;
+        }
+
+        /**
+         * Initialize nodes of the DD
+         */
+        for (int i = n; i >= 0; i--) {
+            MyVector<Node<ARITY> > const &node = (*diagram)[i];
+            size_t const m = node.size();
+            work[i].resize(m);
+
+            for (size_t j = 0; j < m && i < n; j++) {
+                eval.initializenode(work[i][j]);
+            }
+
+            if (i == n) {
+                for (size_t j = 0; j < m; j++) {
+                    eval.initializerootnode(work[i][j]);
+                }
+            }
+        }
+
+        /**
+         * Compute all the node of ZDD
+         */
+        for (int i = n ; i > 0; i--) {
+            MyVector<Node<ARITY> > const &node = (*diagram)[i];
+            size_t const m = node.size();
+
+            for (size_t j = 0; j < m; j++) {
+                eval.evalNode(work[i][j], i);
+            }
+
+            if (msg) {
+                mh.step();
+            }
+        }
+
+        /**
+         * Return the optimal solution
+         */
+        R retval = eval.get_objective(work[0][1]);
+
+        // for (int i = n; i >= 0; i--) {
+        //     work[i].clear();
+        // }
+
+        if (msg) {
+            mh.end();
+        }
+
 
         return retval;
     }
