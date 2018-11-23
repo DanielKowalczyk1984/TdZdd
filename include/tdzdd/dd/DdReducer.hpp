@@ -177,7 +177,7 @@ private:
                     if (del) {
                         f = f0;
 #ifdef DEBUG
-                        if (f == 0) ++dead;
+                        if (f == 0){ ++dead};
 #endif
                     }
                 }
@@ -268,7 +268,7 @@ private:
         for (size_t j = 0; j < m; ++j) {
             NodeId const f(i, j);
             assert(newId[j].row() <= i + 1);
-            if (newId[j].row() <= i) continue;
+            if (newId[j].row() <= i){ continue;}
 
             for (size_t k = j; k < m;) { // for each g in f0-equivalent list
                 assert(j <= k);
