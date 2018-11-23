@@ -47,12 +47,25 @@ public:
             : table(n) {
     }
 
-    DataTable(DataTable const& o)
-            : table(o.table) {
+    /** Copy constructor */
+    DataTable(const DataTable &other):table(other.table){
+
     }
 
-    DataTable& operator=(DataTable const& o) {
-        table = o.table;
+    /** Move Constructor */
+    DataTable(DataTable&& other) noexcept : table(other.table){
+    }
+
+    /** Copy Assignment operator */
+    DataTable& operator=(const DataTable& other){
+        DataTable tmp(other);
+        *this = std::move(tmp);
+        return *this;
+    }
+
+    /** Move assignment operator */
+    DataTable& operator=(DataTable &&other) noexcept{
+        table = other.table;
         return *this;
     }
 
