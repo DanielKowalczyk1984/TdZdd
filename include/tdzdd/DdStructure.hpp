@@ -573,7 +573,7 @@ public:
 
             for (size_t j = 0; j < m; ++j) {
                 eval.initializenode(work[i][j]);
-                eval.evalNode(&(work[i][j]), i);
+                eval.evalNode(&(work[i][j]));
             }
 
             if (msg) {
@@ -581,7 +581,7 @@ public:
             }
         }
 
-        R retval = eval.get_objective(getDiagram(), &work, &root_);
+        R retval = eval.get_objective(work[n][0]);
 
         if (msg) {
             mh.end();
@@ -617,13 +617,13 @@ public:
             size_t const m = node.size();
             work[i].resize(m);
 
-            for (size_t j = 0; j < m && i < n; j++) {
-                eval.initializenode(work[i][j]);
-            }
-
             if (i == n) {
-                for (size_t j = 0; j < m; j++) {
-                    eval.initializerootnode(work[i][j]);
+                for (auto &it: work[i]) {
+                    eval.initializerootnode(it);
+                }
+            } else {
+                for(auto &it: work[i]){
+                    eval.initializenode(it);
                 }
             }
         }
@@ -632,11 +632,8 @@ public:
          * Compute all the node of ZDD
          */
         for (int i = n ; i > 0; i--) {
-            MyVector<Node<ARITY> > const &node = (*diagram)[i];
-            size_t const m = node.size();
-
-            for (size_t j = 0; j < m; j++) {
-                eval.evalNode(work[i][j], i);
+            for (auto &it: work[i]) {
+                eval.evalNode(it);
             }
 
             if (msg) {
@@ -649,14 +646,9 @@ public:
          */
         R retval = eval.get_objective(work[0][1]);
 
-        // for (int i = n; i >= 0; i--) {
-        //     work[i].clear();
-        // }
-
         if (msg) {
             mh.end();
         }
-
 
         return retval;
     }
