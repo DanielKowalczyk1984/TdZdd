@@ -125,7 +125,7 @@ public:
      * Returns preference to show messages.
      * @return true if messages are preferred.
      */
-    bool showMessages() const {
+    virtual bool showMessages() const {
         return false;
     }
 
@@ -133,7 +133,7 @@ public:
      * Initialization.
      * @param level the maximum level of the DD.
      */
-    void initialize(int level) {
+    virtual void initialize(int level) {
     }
 
     /**
@@ -141,16 +141,23 @@ public:
      * @param v work area value for the root node.
      * @return final value of the evaluation.
      */
-    R getValue(T const& v) {
-        return R(v);
-    }
+    virtual R getValue(T const& v) = 0;
 
     /**
      * Destructs i-th level of data storage.
      * @param i the level to be destructerd.
      */
-    void destructLevel(int i) {
+    virtual void destructLevel(int i) {
     }
+
+
+    virtual void initializenode(T& n) const ;
+
+    virtual void initializerootnode(T& n) const ;
+
+    virtual void evalNode(T& n) const;
+
+    virtual R get_objective(T& n) const;
 };
 
 } // namespace tdzdd

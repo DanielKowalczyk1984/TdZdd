@@ -45,6 +45,19 @@ public:
             topLevel(0) {
     }
 
+    void initializenode(T &n) const {
+
+    }
+
+    void initializerootnode(T &n) const {
+
+    }
+
+    T get_objective(T &n) const {
+        T sol;
+        return sol; 
+    }
+
     void initialize(int level) {
         topLevel = level;
     }
@@ -84,6 +97,10 @@ public:
         else {
             return n;
         }
+    }
+
+    void evalNode(T &n) const {
+
     }
 };
 
@@ -183,6 +200,24 @@ public:
 
     void destructLevel(int i) {
         pools[i].clear();
+    }
+
+
+    void initializenode(tdzdd::BigNumber &n) const {
+
+    }
+
+    void initializerootnode(tdzdd::BigNumber &n) const {
+
+    }
+
+    std::string get_objective(tdzdd::BigNumber &n) const {
+        std::string sol;
+        return sol; 
+    }
+
+    void evalNode(tdzdd::BigNumber &n) const {
+
     }
 };
 

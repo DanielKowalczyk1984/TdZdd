@@ -590,16 +590,57 @@ public:
         return retval;
     }
 
+    template <typename S, typename T, typename R>
+    R evaluate_backward(DdEval<S, T, R> const &evaluator, DataTable<T> &work) const {
+        bool           msg = evaluator.showMessages();
+        int            n = root_.row();
+        MessageHandler mh;
+
+        if (msg) {
+            mh.begin(typenameof(evaluator));
+            mh.setSteps(n);
+        }
+
+        if (this->size() == 0) {
+            printf("empty DDstructure\n");
+            R retval;
+            return retval;
+        }
+
+        evaluator.initializerootnode(work[0][1]);
+
+        for (int i = 1; i <= n; ++i) {
+            MyVector<Node<ARITY>> const &node = (*diagram)[i];
+            size_t const                 m = node.size();
+
+            for (size_t j = 0; j < m; ++j) {
+                evaluator.initializenode(work[i][j]);
+                evaluator.evalNode(work[i][j]);
+            }
+
+            if (msg) {
+                mh.step();
+            }
+        }
+
+        R retval = evaluator.get_objective(work[n][0]);
+
+        if (msg) {
+            mh.end();
+        }
+
+        return retval;
+    }
+
     template<typename S, typename T, typename R>
-    R evaluate_duration(DdEval<S, T, R> const &evaluator, DataTable<T> &work) const
+    R evaluate_forward(DdEval<S, T, R> const *evaluator, DataTable<T> &work) const
     {
-        S eval(evaluator.entity()); // copied
-        bool msg = eval.showMessages();
+        bool msg = evaluator->showMessages();
         int n = root_.row();
         MessageHandler mh;
 
         if (msg) {
-            mh.begin(typenameof(eval));
+            mh.begin(typenameof(evaluator));
             mh.setSteps(n);
         }
 
@@ -619,11 +660,11 @@ public:
 
             if (i == n) {
                 for (auto &it: work[i]) {
-                    eval.initializerootnode(it);
+                    evaluator->initializerootnode(it);
                 }
             } else {
                 for(auto &it: work[i]){
-                    eval.initializenode(it);
+                    evaluator->initializenode(it);
                 }
             }
         }
@@ -633,7 +674,7 @@ public:
          */
         for (int i = n ; i > 0; i--) {
             for (auto &it: work[i]) {
-                eval.evalNode(it);
+                evaluator->evalNode(it);
             }
 
             if (msg) {
@@ -644,7 +685,7 @@ public:
         /**
          * Return the optimal solution
          */
-        R retval = eval.get_objective(work[0][1]);
+        R retval = evaluator->get_objective(work[0][1]);
 
         if (msg) {
             mh.end();
