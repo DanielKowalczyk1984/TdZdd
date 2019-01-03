@@ -151,13 +151,13 @@ public:
     }
 
 
-    virtual void initializenode(T& n) const ;
+    virtual void initializenode(T& n) const = 0 ;
 
-    virtual void initializerootnode(T& n) const ;
+    virtual void initializerootnode(T& n) const = 0 ;
 
-    virtual void evalNode(T& n) const;
+    virtual void evalNode(T& n) const = 0;
 
-    virtual R get_objective(T& n) const;
+    virtual R get_objective(T& n) const = 0;
 };
 
 } // namespace tdzdd
