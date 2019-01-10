@@ -592,14 +592,7 @@ public:
 
     template <typename S, typename T, typename R>
     R evaluate_backward(DdEval<S, T, R> const &evaluator, DataTable<T> &work) const {
-        bool           msg = evaluator.showMessages();
         int            n = root_.row();
-        MessageHandler mh;
-
-        if (msg) {
-            mh.begin(typenameof(evaluator));
-            mh.setSteps(n);
-        }
 
         if (this->size() == 0) {
             printf("empty DDstructure\n");
@@ -608,41 +601,19 @@ public:
         }
 
         evaluator.initializerootnode(work[0][1]);
-
         for (int i = 1; i <= n; ++i) {
-            MyVector<Node<ARITY>> const &node = (*diagram)[i];
-            size_t const                 m = node.size();
-
-            for (size_t j = 0; j < m; ++j) {
-                evaluator.initializenode(work[i][j]);
-                evaluator.evalNode(work[i][j]);
-            }
-
-            if (msg) {
-                mh.step();
+            for (auto &it : work[i]) {
+                evaluator.initializenode(it);
+                evaluator.evalNode(it);
             }
         }
 
-        R retval = evaluator.get_objective(work[n][0]);
-
-        if (msg) {
-            mh.end();
-        }
-
-        return retval;
+        return evaluator.get_objective(work[n][0]);
     }
 
     template<typename S, typename T, typename R>
-    R evaluate_forward(DdEval<S, T, R> const *evaluator, DataTable<T> &work) const
-    {
-        bool msg = evaluator->showMessages();
+    R evaluate_forward(DdEval<S, T, R> const &evaluator, DataTable<T> &work) const {
         int n = root_.row();
-        MessageHandler mh;
-
-        if (msg) {
-            mh.begin(typenameof(evaluator));
-            mh.setSteps(n);
-        }
 
         if (this->size() == 0){
             printf("empty DDstructure\n");
@@ -653,19 +624,10 @@ public:
         /**
          * Initialize nodes of the DD
          */
-        for (int i = n; i >= 0; i--) {
-            MyVector<Node<ARITY> > const &node = (*diagram)[i];
-            size_t const m = node.size();
-            work[i].resize(m);
-
-            if (i == n) {
-                for (auto &it: work[i]) {
-                    evaluator->initializerootnode(it);
-                }
-            } else {
-                for(auto &it: work[i]){
-                    evaluator->initializenode(it);
-                }
+        evaluator.initializerootnode(work[n][0]);
+        for (int i = n - 1; i >= 0; i--) {
+            for(auto &it : work[i]){
+                evaluator.initializenode(it);
             }
         }
 
@@ -674,24 +636,14 @@ public:
          */
         for (int i = n ; i > 0; i--) {
             for (auto &it: work[i]) {
-                evaluator->evalNode(it);
-            }
-
-            if (msg) {
-                mh.step();
+                evaluator.evalNode(it);
             }
         }
 
         /**
          * Return the optimal solution
          */
-        R retval = evaluator->get_objective(work[0][1]);
-
-        if (msg) {
-            mh.end();
-        }
-
-        return retval;
+        return evaluator.get_objective(work[0][1]);
     }
 
     template <typename S, typename T, typename R>
